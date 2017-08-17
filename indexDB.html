@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+	</head>
+	<body>
+		CCC
+		<div id="result"></div>
+	</body>
+	<script type="text/javascript" src="js/jquery-2.1.0.js" ></script>
+	<!--<script type="text/javascript" src="js/jquery-3.0.0.min.js" ></script>-->
+	<script type="text/javascript" src="js/jquery-sogrey-common.js" ></script>
+	<script type="text/javascript" src="js/jquery-sogrey-indexdb.js" ></script>
+	
+	<script>
+		$(function(){
+//			 console.log(jQuery.fn.jquery);
+//  console.log($.fn.jquery);
+//  console.log($.prototype.jquery);
+//  
+    
+    
+			SogreyIndexDB.createDataBase("demo2",3)
+			SogreyIndexDB.openDatabase("demo2")
+			var object={userId:"012",userName:"韩梅梅"};SogreyIndexDB.insert("users",object)
+//			SogreyIndexDB.query("users")
+			SogreyIndexDB.queryAll("users")
+		})
+	</script>
+</html>
