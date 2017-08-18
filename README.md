@@ -93,3 +93,25 @@
 	[10] SogreyWebsql.deleteAll(tableName) - 删除tableName中全部数据;  参数：tableName-表名
 	[11] SogreyWebsql.update(tableName, setArg, whereArg, whereValue) - 更新tableName中数据;  参数：tableName-表名,setArg-要更新的新数据；例如 'name=?' ,whereArg-要更新的条件；例如 'id=?' ,whereValue-前两个参数中替换?的值('|'分割);例如 '李雷|1' 
 	[12] SogreyWebsql.query(tableName, whereArg, whereValue) - 查询tableName中数据;  参数：tableName-表名,whereArg-查询条件；例如 'id=? and name=?' ,whereValue-查询条件中中替换?的值('|'分割);例如 '李雷|1' 
+
+
+###SogreyCookie APIs
+
+	版本号：1.0.0
+	
+	其他依赖JS：
+	[1]jquery-sogrey-common.js  版本号：1.0.0
+	
+	成员变量:
+	
+	    暂无成员变量。
+	
+	
+	成员函数:
+	
+	[1] log(object) - log日志输出;  参数：object-object对象，可以是字符串
+	[2] error(object) - error日志输出;  参数：object-object对象，可以是字符串
+	[3] SogreyCookie.setCookie(key, value) - 设置cookie;  参数：key-cookie 的key,value-cookie 的值
+	[4] SogreyCookie.setCookies(keys, values) - 设置多个cookie;  参数：keys-cookie 的key ,多个key以“|”分隔，例如key：id|name,values-cookie 的值 ,多个值以“|”分隔,且个数与key须一致，例如对应前面keys 对应value：1|李雷
+	[5] SogreyCookie.getCookie(key) - 读取cookie，不存在则返回null;  参数：key-cookie 的key
+	[6] SogreyCookie.getCookie(key) - 删除cookie;  参数：key-cookie 的key
