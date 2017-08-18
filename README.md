@@ -95,7 +95,7 @@
 	[12] SogreyWebsql.query(tableName, whereArg, whereValue) - 查询tableName中数据;  参数：tableName-表名,whereArg-查询条件；例如 'id=? and name=?' ,whereValue-查询条件中中替换?的值('|'分割);例如 '李雷|1' 
 
 
-###SogreyCookie APIs
+### SogreyCookie APIs
 
 	版本号：1.0.0
 	
