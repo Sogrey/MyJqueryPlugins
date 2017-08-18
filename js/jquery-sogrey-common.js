@@ -26,8 +26,8 @@
 	//js插件版本信息、字段、方法api帮助信息展示
 	SogreyCommon._h = function(apiData) {
 		var helpStr = apiData.title + "\n版本号：" + apiData.version + "\n";
-		helpStr += "依赖jquery版本：" + apiData.jqueryVersion + "\n";
-		helpStr += "其他依赖JS：\n";
+		helpStr +=apiData.jqueryVersion==null?"": "依赖jquery版本：" + apiData.jqueryVersion + "\n";
+		helpStr += "\n其他依赖JS：\n";
 		if(apiData.otherRelyOn && apiData.otherRelyOn.length > 0) {
 			for(var i = 0; i < apiData.otherRelyOn.length; i++) {
 				helpStr += "[" + (i + 1) + "]" + apiData.otherRelyOn[i].name + "  版本号：" + apiData.otherRelyOn[i].version + "\n";

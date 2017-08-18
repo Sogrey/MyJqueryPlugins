@@ -1,4 +1,5 @@
 /***
+ * Websql 操作
  @ Editor       Sogrey
  @ version      1.0.0
  @ DependOn     jQuery
