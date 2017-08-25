@@ -1,7 +1,6 @@
 /***
- * Websql 操作
  @ Editor       Sogrey
- @ version      1.0.0
+ @ version      1.0.1
  @ DependOn     jQuery
  @ Date         2017-08-15
  ***/
@@ -12,8 +11,9 @@
 
 	var sogreyWebsql = SogreyWebsql = {
 		editor: 'Sogrey',
-		version: '1.0.0',
+		version: '1.0.1',
 		date: '2017-08-15',
+		update:'2017-08-25',
 		jQueryVersion: $.fn.jquery,
 		helpName: "SogreyWebsql APIs",
 		help: function() {
@@ -74,7 +74,7 @@
 		return db
 	}
 	//插入数据
-	SogreyWebsql.insrert = function(tableName, dataMap) {
+	SogreyWebsql.insert = function(tableName, dataMap) {
 		//		var key1 = '动态key1';
 		//		var key2 = '动态key2';
 		//		var map = {};
@@ -90,22 +90,52 @@
 		//				console.log('key is ' + prop + ' and value is' + map[prop]);
 		//			}
 		//		}
-		SogreyWebsql.createTableWithDBDataCallback(function(tx) {
-			var keys = "";
-			var values = "";
-			for(var prop in dataMap) {
 
-				if(dataMap.hasOwnProperty(prop)) {
-					console.log('key is ' + prop + ' and value is' + dataMap[prop]);
-					keys += "'" + prop + "',"
-					values += "'" + dataMap[prop] + "',"
-				}
+		var keys = "",
+			keysWhere = "";
+		var values = "",
+			valuesWhere = "";
+		for(var prop in dataMap) {
+
+			if(dataMap.hasOwnProperty(prop)) {
+				//					log('key is ' + prop + ' and value is' + dataMap[prop]);
+				keys += "'" + prop + "',"
+				keysWhere += "" + prop + "|"
+				values += "'" + dataMap[prop] + "',"
+				valuesWhere += "'" + dataMap[prop] + "'|"
 			}
-			keys = keys.substr(0, keys.length - 1)
-			values = values.substr(0, values.length - 1)
-			log('INSERT INTO ' + tableName + ' (' + keys + ') VALUES (' + values + ')')
-			tx.executeSql('INSERT INTO ' + tableName + ' (' + keys + ') VALUES (' + values + ')');
+		}
+		keys = keys.substr(0, keys.length - 1)
+		values = values.substr(0, values.length - 1)
+		keysWhere = keysWhere.substr(0, keysWhere.length - 1)
+		valuesWhere = valuesWhere.substr(0, valuesWhere.length - 1)
+		var key = SogreyWebsql.getKeyPathByTableName(tableName)
+		var value = dataMap[key]
+		SogreyWebsql.isExists(tableName, key + "=?", value, function(result) {
+			if(result) {
+				//update
+				SogreyWebsql.update(tableName, keysWhere, key, valuesWhere + "|'" + value + "'")
+			} else {
+				//insert
+				SogreyWebsql.createTableWithDBDataCallback(function(tx) {
+					log('INSERT INTO ' + tableName + ' (' + keys + ') VALUES (' + values + ')')
+					tx.executeSql('INSERT INTO ' + tableName + ' (' + keys + ') VALUES (' + values + ')');
+				})
+				/*INSERT INTO planList ('id','pid','guid','title','startTimePlan','endTimePlan','startTime','endTime','completePer') 
+				VALUES ('28','123','36','青海扎道路项目计划-28','2017.01.01','2017.01.21','2017.01.03','2017.01.31','20')*/				
+			}
 		})
+
+	}
+	//数据库插入对象
+	SogreyWebsql.insertObj = function(tableName, obj) {
+		//		log(obj)
+		var map = {};
+		for(var name in obj) {
+			map[name] = obj[name] + "";
+		}
+		//		log(map)
+		SogreyWebsql.insrert(tableName, map)
 	}
 	//删除数据
 	SogreyWebsql.delete = function(tableName, whereArg, whereValue) {
@@ -115,45 +145,59 @@
 		var whereValueArray = []
 		if(whereValue != "" && typeof(whereValue) != "undefined")
 			whereValueArray = whereValue.split("|")
-
-		var db = SogreyWebsql.createTableWithDBData()
-		db.transaction(function(tx) {
-			//			DELETE * FROM 表名 WHERE 条件
-			tx.executeSql('DELETE FROM ' + tableName + whereArg, whereValueArray, function(tx1, results) {
-				console.log(results)
-			}, null);
-		});
+		SogreyWebsql.executeSql('DELETE FROM ' + tableName + whereArg, whereValueArray)
 	}
 	//删除全部
 	SogreyWebsql.deleteAll = function(tableName) {
-
-		var db = SogreyWebsql.createTableWithDBData()
-		db.transaction(function(tx) {
-			//			DELETE * FROM 表名 WHERE 条件
-			tx.executeSql('DELETE FROM ' + tableName, [], function(tx1, results) {
-				console.log(results)
-			}, null);
-		});
+		SogreyWebsql.executeSql('DELETE FROM ' + tableName, [])
 	}
 	//更新数据
 	SogreyWebsql.update = function(tableName, setArg, whereArg, whereValue) {
-		whereArg = " SET " + setArg + " WHERE " + whereArg
-		if(whereArg == "" || typeof(whereValue) == "undefined")
-			whereArg = ""
-		var whereValueArray = []
-		if(whereValue != "" && typeof(whereValue) != "undefined")
-			whereValueArray = whereValue.split("|")
+		//log(setArg)
+		//log(whereArg)
+		//log(whereValue)
+		//id|pid|guid|title|startTimePlan|endTimePlan|startTime|endTime|completePer
+		//id
+		//'31'|'001'|'148'|'青海扎道路项目计划-31'|'2017.01.01'|'2017.01.21'|'2017.01.03'|'2017.01.31'|'20'|'31'
 
-		var db = SogreyWebsql.createTableWithDBData()
-		db.transaction(function(tx) {
-			//			UPDATE 表名称 SET 列名称 = 新值 WHERE 列名称 = 某值
-			tx.executeSql('UPDATE ' + tableName + whereArg, whereValueArray, function(tx1, results) {
-				console.log(results)
-			}, null);
-		});
+		var setArgSql = ""
+		var whereArgSql = ""
+
+		var setArgArray = setArg.split("|")
+		var whereValueArray = whereValue.split("|")
+
+		for(var i = 0; i < setArgArray.length; i++) {
+			if(setArgArray[i] != whereArg)
+				setArgSql += setArgArray[i] + "=" + whereValueArray[i] + ","
+			else
+				whereArgSql += setArgArray[i] + "=" + whereValueArray[i] + ","
+		}
+		setArgSql = setArgSql.substr(0, setArgSql.length - 1)
+		whereArgSql = whereArgSql.substr(0, whereArgSql.length - 1)
+
+		var sql = "UPDATE planList SET " + setArgSql + " WHERE " + whereArgSql;
+//		log(sql)
+//		var db = SogreyWebsql.createTableWithDBData()
+//		db.transaction(function(tx) {
+//			//			UPDATE 表名称 SET 列名称 = 新值 WHERE 列名称 = 某值
+//
+//			//UPDATE planList SET id='15', pid='12345678', guid='123431', title='hahah' ,completePer='40' WHERE id='15'
+//			//			tx.executeSql("UPDATE planList SET id='15', pid='007', guid='ooo', title='yoyoyo' ,completePer='40' WHERE id='15'",[], function(tx1, results) {
+//			//				console.log(results)
+//			//			}, null);
+//			//			UPDATE planList SET pid='001',guid='148',title='青海扎道路项目计划-31',startTimePlan='2017.01.01',endTimePlan='2017.01.21',startTime='2017.01.03',endTime='2017.01.31',completePer='20' WHERE id='31'
+//			tx.executeSql(sql, [], function(tx1, results) {
+//				console.log(results)
+//			}, null);
+//		});
+		SogreyWebsql.executeSql(sql, [])
 	}
 	//查询数据
 	SogreyWebsql.query = function(tableName, whereArg, whereValue) {
+		SogreyWebsql.queryCallback(tableName, whereArg, whereValue, null)
+	}
+	//查询数据
+	SogreyWebsql.queryCallback = function(tableName, whereArg, whereValue, callback) {
 		whereArg = " where " + whereArg
 		if(whereArg == "" || typeof(whereValue) == "undefined")
 			whereArg = ""
@@ -161,10 +205,65 @@
 		if(whereValue != "" && typeof(whereValue) != "undefined")
 			whereValueArray = whereValue.split("|")
 
+//		var db = SogreyWebsql.createTableWithDBData()
+//		db.transaction(function(tx) {
+//			tx.executeSql('SELECT * FROM ' + tableName + whereArg, whereValueArray, function(tx1, results) {
+//				//				log(results)
+//				//				
+//				//				var html =(typeof(results.rows)=="SQLResultSetRowList")+"<br/>"+ "查询到" + results.rows.length + "条数据<br/>"
+//				//				for(i = 0; i < results.rows.length; i++) {
+//				//					html += "<p><b>" + results.rows.item(i).id + " - " + results.rows.item(i).name + " - " + results.rows.item(i).desc + "</b></p><br/>";
+//				//				}
+//				//				html +=JSON.stringify(results.rows)+"<br/>"
+//				//				html +=results.rows.item(1).name+"<br/>"
+//				//				html +=JSON.parse(JSON.stringify(results.rows)); 
+//				//				$("#result").html(html)
+//				if(typeof(callback) == "function") {
+//					callback(results.rows);
+//				}
+//			}, null);
+//		});
+		SogreyWebsql.executeSqlCallback('SELECT * FROM ' + tableName + whereArg, whereValueArray,callback)
+	}
+	//查询是否已存在
+	SogreyWebsql.isExists = function(tableName, whereArg, whereValue, callback) {
+		SogreyWebsql.queryCallback(tableName, whereArg, whereValue, function(rows) {
+			if(typeof(callback) == "function") {
+				if(rows.length > 0) {
+					callback(true)
+				} else {
+					callback(false)
+				}
+			}
+		});
+	}
+	SogreyWebsql.getKeyPathByTableName = function(tableName) {
+		if(DBData && DBData.db && DBData.db.length > 0) {
+			for(var i = 0; i < DBData.db.length; i++) {
+				if(DBData.db[i].tableName === tableName) {
+					return DBData.db[i].keyPath
+				}
+			}
+		}
+		return null
+	}
+	//执行sql
+	SogreyWebsql.executeSql=function(sql,whereArg){
+		SogreyWebsql.executeSqlCallback(sql,whereArg,null)
+	}
+	SogreyWebsql.executeSqlCallback=function(sql,whereArg,callback){
 		var db = SogreyWebsql.createTableWithDBData()
 		db.transaction(function(tx) {
-			tx.executeSql('SELECT * FROM ' + tableName + whereArg, whereValueArray, function(tx1, results) {
-				console.log(results)
+			//			UPDATE 表名称 SET 列名称 = 新值 WHERE 列名称 = 某值
+
+			//UPDATE planList SET id='15', pid='12345678', guid='123431', title='hahah' ,completePer='40' WHERE id='15'
+			//			tx.executeSql("UPDATE planList SET id='15', pid='007', guid='ooo', title='yoyoyo' ,completePer='40' WHERE id='15'",[], function(tx1, results) {
+			//				console.log(results)
+			//			}, null);
+			//			UPDATE planList SET pid='001',guid='148',title='青海扎道路项目计划-31',startTimePlan='2017.01.01',endTimePlan='2017.01.21',startTime='2017.01.03',endTime='2017.01.31',completePer='20' WHERE id='31'
+			tx.executeSql(sql, whereArg, function(tx1, results) {
+				if(typeof(callback)=="function")
+				callback(results.rows)
 			}, null);
 		});
 	}
@@ -247,7 +346,7 @@
 				}]
 			},
 			{
-				funName: "SogreyWebsql.insrert(tableName, dataMap)",
+				funName: "SogreyWebsql.insert(tableName, dataMap)",
 				desc: "向表tableName中插入数据",
 				params: [{
 					paramName: "tableName",
@@ -255,6 +354,17 @@
 				}, {
 					paramName: "dataMap",
 					desc: "要插入的数据；dataMap是个map,定义参考 ：\n                   var key = '动态key';\n                   var map = {};\n                   map[key1] = 'value';"
+				}]
+			},
+			{
+				funName: "SogreyWebsql.insertObj(tableName, obj)",
+				desc: "向表tableName中插入数据",
+				params: [{
+					paramName: "tableName",
+					desc: "表名"
+				}, {
+					paramName: "obj",
+					desc: "要插入的数据对象，会自动读取该对象的所有字段属性及对应属性值成列，进行插入数据"
 				}]
 			},
 			{
@@ -309,7 +419,74 @@
 					paramName: "whereValue",
 					desc: "查询条件中中替换?的值('|'分割);例如 '李雷|1' "
 				}]
-			}
+			},
+			{
+				funName: "SogreyWebsql.queryCallback(tableName, whereArg, whereValue, callback)",
+				desc: "查询tableName中数据",
+				params: [{
+					paramName: "tableName",
+					desc: "表名"
+				}, {
+					paramName: "whereArg",
+					desc: "查询条件；例如 'id=? and name=?' "
+				}, {
+					paramName: "whereValue",
+					desc: "查询条件中中替换?的值('|'分割);例如 '李雷|1' "
+				}, {
+					paramName: "callback",
+					desc: "查询回调"
+				}]
+			},
+			{
+				funName: "SogreyWebsql.isExists(tableName, whereArg, whereValue, callback)",
+				desc: "检查指定条件下数据是否已存在",
+				params: [{
+					paramName: "tableName",
+					desc: "表名"
+				}, {
+					paramName: "whereArg",
+					desc: "查询条件；例如 'id=? and name=?' "
+				}, {
+					paramName: "whereValue",
+					desc: "查询条件中中替换?的值('|'分割);例如 '李雷|1' "
+				}, {
+					paramName: "callback",
+					desc: "回调函数 function ,其携带参数 为boolean 型，true已存在，false不存在 "
+				}]
+			},
+			{
+				funName: "SogreyWebsql.getKeyPathByTableName(tableName)",
+				desc: "检查指定表的主键key",
+				params: [{
+					paramName: "tableName",
+					desc: "表名"
+				}]
+			},
+			{
+				funName: "SogreyWebsql.executeSql(sql,whereArg)",
+				desc: "执行sql语句",
+				params: [{
+					paramName: "sql",
+					desc: "sql语句"
+				},{
+					paramName: "whereArg",
+					desc: "替换sql语句中?的值，是个数组"
+				}]
+			},
+			{
+				funName: "SogreyWebsql.executeSqlCallback(sql,whereArg,callback)",
+				desc: "执行sql语句",
+				params: [{
+					paramName: "sql",
+					desc: "sql语句"
+				},{
+					paramName: "whereArg",
+					desc: "替换sql语句中?的值，是个数组"
+				},{
+					paramName: "callback",
+					desc: "执行回调，其参数是查询结果，rows 是数组，lenght长度"
+				}]
+			}			
 		]
 	}
 	//数据库表结构
@@ -325,6 +502,26 @@
 			tableName: "baseData", //表名
 			keyPath: "id",
 			cols: "name|desc" //字段列名
+		}, {
+			tableName: "keyValue", //表名
+			keyPath: "key",
+			cols: "value" //字段列名
+		}, {
+			tableName: "planList30", //月计划表名
+			keyPath: "id",
+			cols: "pid|guid|title|startTimePlan|endTimePlan|startTime|endTime|completePer" //字段列名
+		}, {
+			tableName: "planList10", //旬计划表名
+			keyPath: "id",
+			cols: "pid|guid|title|startTimePlan|endTimePlan|startTime|endTime|completePer" //字段列名
+		}, {
+			tableName: "planList7", //周计划表名
+			keyPath: "id",
+			cols: "pid|guid|title|startTimePlan|endTimePlan|startTime|endTime|completePer" //字段列名
+		}, {
+			tableName: "planList1", //日计划表名
+			keyPath: "id",
+			cols: "pid|guid|title|startTimePlan|endTimePlan|startTime|endTime|completePer" //字段列名
 		}]
 	}
 	window.sogreyWebsql = window.SogreyWebsql = SogreyWebsql;

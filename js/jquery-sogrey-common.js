@@ -26,7 +26,7 @@
 	//js插件版本信息、字段、方法api帮助信息展示
 	SogreyCommon._h = function(apiData) {
 		var helpStr = apiData.title + "\n版本号：" + apiData.version + "\n";
-		helpStr +=apiData.jqueryVersion==null?"": "依赖jquery版本：" + apiData.jqueryVersion + "\n";
+		helpStr += apiData.jqueryVersion == null ? "" : "依赖jquery版本：" + apiData.jqueryVersion + "\n";
 		helpStr += "\n其他依赖JS：\n";
 		if(apiData.otherRelyOn && apiData.otherRelyOn.length > 0) {
 			for(var i = 0; i < apiData.otherRelyOn.length; i++) {
@@ -114,11 +114,13 @@
 	}
 
 	/**获取参数*/
-	SogreyCommon.Request = {
-		GetQueryString: function(key) {
-			var svalue = location.search.match(new RegExp("[\?\&]" + key + "=([^\&]*)(\&?)", "i"));
-			return svalue ? svalue[1] : '';
-		}
+	SogreyCommon.GetQueryString = function(key, defaultValue) {
+		var svalue = location.search.match(new RegExp("[\?\&]" + key + "=([^\&]*)(\&?)", "i"));
+		return svalue ? svalue[1] : defaultValue;
+	}
+	SogreyCommon.GetQueryStringByUrl = function(url, key, defaultValue) {
+		var svalue = url.match(new RegExp("[\?\&]" + key + "=([^\&]*)(\&?)", "i"));
+		return svalue ? svalue[1] : defaultValue;
 	}
 	//正则匹配
 	SogreyCommon.pattern = {
@@ -217,6 +219,30 @@
 					}]
 				}]
 			}, {
+				funName: "GetQueryString(key,defaultValue)",
+				desc: "获取当前页参数，地址栏地址?后面的 key=value,结果返回value",
+				params: [{
+					paramName: "key",
+					desc: "参数名key"
+				}, {
+					paramName: "defaultValue",
+					desc: "默认值"
+				}]
+			}, {
+				funName: "GetQueryStringByUrl(url,key,defaultValue)",
+				desc: "获取指url参数，地址栏地址?后面的 key=value,结果返回value",
+				params: [{
+					paramName: "url",
+					desc: "目标url"
+				}, {
+					paramName: "key",
+					desc: "参数名key"
+				}, {
+					paramName: "defaultValue",
+					desc: "默认值"
+				}]
+			}
+			/*{
 				funName: "Request",
 				desc: "获取参数",
 				params: [],
@@ -229,7 +255,7 @@
 						desc: "参数名key"
 					}]
 				}]
-			}
+			}*/
 		]
 	}
 
