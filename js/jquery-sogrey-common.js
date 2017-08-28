@@ -122,6 +122,100 @@
 		var svalue = url.match(new RegExp("[\?\&]" + key + "=([^\&]*)(\&?)", "i"));
 		return svalue ? svalue[1] : defaultValue;
 	}
+	//比较两个日期大小. 例：2014-10-24(yyyy-MM-dd) ;前者大于后者返回true 否则返回false
+	SogreyCommon.dateCompare = function(startDate, endDate) {
+		var aStart = startDate.split('-'); //转成成数组，分别为年，月，日，下同  
+		var aEnd = endDate.split('-');
+		var startDateTemp = aStart[0] + "/" + aStart[1] + "/" + aStart[2];
+		var endDateTemp = aEnd[0] + "/" + aEnd[1] + "/" + aEnd[2];
+		if(startDateTemp > endDateTemp)
+			return true;
+		else
+			return false;
+	}
+	//计算两个日期之间的天数  
+	SogreyCommon.dateDiff = function(date1, date2) {
+		var type1 = typeof date1,
+			type2 = typeof date2;
+		if(type1 == 'string')
+			date1 = SogreyCommon.stringToTime(date1);
+		else if(date1.getTime)
+			date1 = date1.getTime();
+		if(type2 == 'string')
+			date2 = SogreyCommon.stringToTime(date2);
+		else if(date2.getTime)
+			date2 = date2.getTime();
+		return(date2 - date1) / 1000 / 60 / 60 / 24; //除1000是毫秒，不加是秒   
+	}
+	//字符串转成Time(dateDiff)所需方法    (yyyy-MM-dd HH:mm:ss)
+	SogreyCommon.stringToTime = function(string) {
+		var f = string.split(' ', 2);
+		var d = (f[0] ? f[0] : '').split('-', 3);
+		var t = (f[1] ? f[1] : '').split(':', 3);
+		return(new Date(
+			parseInt(d[0], 10) || null,
+			(parseInt(d[1], 10) || 1) - 1,
+			parseInt(d[2], 10) || null,
+			parseInt(t[0], 10) || null,
+			parseInt(t[1], 10) || null,
+			parseInt(t[2], 10) || null)).getTime();
+	}
+	//显示当前系统日期（跑起来的时间） 例：2014年10月26日17:8:57   星期天
+	SogreyCommon.showtime = function() {
+		// 获取当前时间对象  
+		var day = new Date();
+		var yeas = day.getFullYear(); // 获取年份  
+		var month = day.getMonth(); // 获取月份，值在0--11之间  
+		var days = day.getDate(); // 获取每个月的第几天  
+		var hours = day.getHours(); // 获取当前的小时  
+		var minutes = day.getMinutes(); // 获取当前的分钟  
+		var seconds = day.getSeconds(); // 获取当前的时间秒  
+		var week = day.getDay(); // 获取当前的星期值在0--6之间  
+		// alert(week);  
+		var weeks = null;
+		if(week == 1) {
+			weeks = "星期一";
+		} else if(week == 2) {
+			weeks = "星期二";
+		} else if(week == 3) {
+			weeks = "星期三";
+		} else if(week == 4) {
+			weeks = "星期四";
+		} else if(week == 5) {
+			weeks = "星期五";
+		} else if(week == 6) {
+			weeks = "星期六";
+		} else if(week == 0) { // 0代表的是星期天  
+			weeks = "星期天";
+		}
+		// 将日期显示在前台  
+		return yeas + "年" + (month + 1) + "月" + days + "日" + hours + ":" + minutes + ":" + seconds + "\t\t\t" + weeks;
+	}
+
+	//格式化当前系统时间   例如 返回当前年月日格式为：2016-04-08而不是2016-4-8  new Date().format.("yyyy-MM-dd");  
+	Date.prototype.format = function(format) {
+		var o = {
+			"M+": this.getMonth() + 1, //month   
+			"d+": this.getDate(), //day   
+			"h+": this.getHours(), //hour   
+			"m+": this.getMinutes(), //minute   
+			"s+": this.getSeconds(), //second   
+			"q+": Math.floor((this.getMonth() + 3) / 3), //quarter   
+			"S": this.getMilliseconds() //millisecond   
+		}
+
+		if(/(y+)/.test(format)) {
+			format = format.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+		}
+
+		for(var k in o) {
+			if(new RegExp("(" + k + ")").test(format)) {
+				format = format.replace(RegExp.$1, RegExp.$1.length == 1 ? o[k] : ("00" + o[k]).substr(("" + o[k]).length));
+			}
+		}
+
+		return format;
+	}
 	//正则匹配
 	SogreyCommon.pattern = {
 		//是否匹配
@@ -148,14 +242,14 @@
 			desc: "true输出日志，false则不.正式发布时改为false"
 		}],
 		functions: [{
-				funName: "_h(apiData)",
+				funName: "SogreyCommon._h(apiData)",
 				desc: "js插件版本信息、字段、方法api帮助信息展示，使用JS插件全局变量名+.help()方法调用即可查询该js信息，例如本js可使用  SogreyCommon.help() ，当然前提是js插件是按照固定的方式配置了api信息，外部js无需调用本方法",
 				params: [{
 					paramName: "apiData",
 					desc: "api配置"
 				}]
 			}, {
-				funName: "trim(s)",
+				funName: "SogreyCommon.trim(s)",
 				desc: "去除字符串的首尾的空格",
 				params: [{
 					paramName: "s",
@@ -163,7 +257,7 @@
 				}]
 			},
 			{
-				funName: "isEmpty(s)",
+				funName: "SogreyCommon.isEmpty(s)",
 				desc: "判断字符串是否为空，返回true说明为空",
 				params: [{
 					paramName: "s",
@@ -171,7 +265,7 @@
 				}]
 			},
 			{
-				funName: "log(object)",
+				funName: "SogreyCommon.log(object)",
 				desc: "log日志输出",
 				params: [{
 					paramName: "object",
@@ -179,21 +273,21 @@
 				}]
 			},
 			{
-				funName: "error(object)",
+				funName: "SogreyCommon.error(object)",
 				desc: "error日志输出",
 				params: [{
 					paramName: "object",
 					desc: "object对象，可以是字符串"
 				}]
 			}, {
-				funName: "toast(msg)",
+				funName: "SogreyCommon.toast(msg)",
 				desc: "吐司Toast,默认持续一秒钟",
 				params: [{
 					paramName: "msg",
 					desc: "要展示的信息文本"
 				}]
 			}, {
-				funName: "toastWidthDuration(msg, duration)",
+				funName: "SogreyCommon.toastWidthDuration(msg, duration)",
 				desc: "吐司Toast",
 				params: [{
 					paramName: "msg",
@@ -203,13 +297,8 @@
 					desc: "持续展示时间，单位豪秒"
 				}]
 			}, {
-				funName: "pattern",
-				desc: "正则表达式匹配",
-				params: [],
-				isObject: true,
-				functions: [{
-					funName: "isMatched(pattern, str)",
-					desc: "是否匹配",
+					funName: "SogreyCommon.pattern.isMatched(pattern, str)",
+					desc: "正则表达式匹配   是否匹配",
 					params: [{
 						paramName: "pattern",
 						desc: "匹配规则"
@@ -217,9 +306,8 @@
 						paramName: "str",
 						desc: "要匹配的字符串"
 					}]
-				}]
 			}, {
-				funName: "GetQueryString(key,defaultValue)",
+				funName: "SogreyCommon.GetQueryString(key,defaultValue)",
 				desc: "获取当前页参数，地址栏地址?后面的 key=value,结果返回value",
 				params: [{
 					paramName: "key",
@@ -229,7 +317,7 @@
 					desc: "默认值"
 				}]
 			}, {
-				funName: "GetQueryStringByUrl(url,key,defaultValue)",
+				funName: "SogreyCommon.GetQueryStringByUrl(url,key,defaultValue)",
 				desc: "获取指url参数，地址栏地址?后面的 key=value,结果返回value",
 				params: [{
 					paramName: "url",
@@ -241,21 +329,46 @@
 					paramName: "defaultValue",
 					desc: "默认值"
 				}]
-			}
-			/*{
-				funName: "Request",
-				desc: "获取参数",
-				params: [],
-				isObject: true,
-				functions: [{
-					funName: "GetQueryString(key)",
-					desc: "获取当前页参数，地址栏地址?后面的 key=value,结果返回value",
-					params: [{
-						paramName: "key",
-						desc: "参数名key"
-					}]
+			}, {
+				funName: "SogreyCommon.dateCompare(startDate, endDate)",
+				desc: "比较两个日期大小. 例：2014-10-24(yyyy-MM-dd) ;前者大于后者返回true 否则返回false",
+				params: [{
+					paramName: "startDate",
+					desc: "日期一（yyyy-MM-dd）"
+				}, {
+					paramName: "endDate",
+					desc: "日期二（yyyy-MM-dd）"
 				}]
-			}*/
+			}, {
+				funName: "SogreyCommon.dateDiff(date1, date2)",
+				desc: "计算两个日期之间的天数",
+				params: [{
+					paramName: "date1",
+					desc: "日期一（yyyy-MM-dd HH:mm:ss）"
+				}, {
+					paramName: "date2",
+					desc: "日期二（yyyy-MM-dd HH:mm:ss）"
+				}]
+			}, {
+				funName: "SogreyCommon.stringToTime(string)",
+				desc: "字符串转成Time(dateDiff)所需方法  ",
+				params: [{
+					paramName: "string",
+					desc: "要转成time的日期时间字符串(yyyy-MM-dd HH:mm:ss)"
+				}]
+			}, {
+				funName: "SogreyCommon.showtime()",
+				desc: "显示当前系统日期（跑起来的时间） 例：2014年10月26日17:8:57   星期天 ",
+				params: []
+			}, {
+				funName: "Date.format(format) ",
+				desc: "格式化当前系统时间   例如 返回当前年月日格式为：2016-04-08而不是2016-4-8  使用：new Date().format('yyyy-MM-dd')",
+				params: [{
+					paramName: "format",
+					desc: "要格式化成的格式"
+				}]
+			}
+
 		]
 	}
 

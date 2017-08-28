@@ -13,7 +13,7 @@
 		editor: 'Sogrey',
 		version: '1.0.1',
 		date: '2017-08-15',
-		update:'2017-08-25',
+		update: '2017-08-25',
 		jQueryVersion: $.fn.jquery,
 		helpName: "SogreyWebsql APIs",
 		help: function() {
@@ -122,20 +122,25 @@
 					tx.executeSql('INSERT INTO ' + tableName + ' (' + keys + ') VALUES (' + values + ')');
 				})
 				/*INSERT INTO planList ('id','pid','guid','title','startTimePlan','endTimePlan','startTime','endTime','completePer') 
-				VALUES ('28','123','36','青海扎道路项目计划-28','2017.01.01','2017.01.21','2017.01.03','2017.01.31','20')*/				
+				VALUES ('28','123','36','青海扎道路项目计划-28','2017.01.01','2017.01.21','2017.01.03','2017.01.31','20')*/
 			}
 		})
 
 	}
 	//数据库插入对象
 	SogreyWebsql.insertObj = function(tableName, obj) {
-		//		log(obj)
 		var map = {};
 		for(var name in obj) {
 			map[name] = obj[name] + "";
 		}
-		//		log(map)
-		SogreyWebsql.insrert(tableName, map)
+		SogreyWebsql.insert(tableName, map)
+	}
+	SogreyWebsql.insertArray = function(tableName, array) {
+		if(array.constructor === Array) { //数组
+			for(var i = 0; i < array.length; i++) {
+				SogreyWebsql.insertObj(tableName, array[i])
+			}
+		}
 	}
 	//删除数据
 	SogreyWebsql.delete = function(tableName, whereArg, whereValue) {
@@ -176,20 +181,20 @@
 		whereArgSql = whereArgSql.substr(0, whereArgSql.length - 1)
 
 		var sql = "UPDATE planList SET " + setArgSql + " WHERE " + whereArgSql;
-//		log(sql)
-//		var db = SogreyWebsql.createTableWithDBData()
-//		db.transaction(function(tx) {
-//			//			UPDATE 表名称 SET 列名称 = 新值 WHERE 列名称 = 某值
-//
-//			//UPDATE planList SET id='15', pid='12345678', guid='123431', title='hahah' ,completePer='40' WHERE id='15'
-//			//			tx.executeSql("UPDATE planList SET id='15', pid='007', guid='ooo', title='yoyoyo' ,completePer='40' WHERE id='15'",[], function(tx1, results) {
-//			//				console.log(results)
-//			//			}, null);
-//			//			UPDATE planList SET pid='001',guid='148',title='青海扎道路项目计划-31',startTimePlan='2017.01.01',endTimePlan='2017.01.21',startTime='2017.01.03',endTime='2017.01.31',completePer='20' WHERE id='31'
-//			tx.executeSql(sql, [], function(tx1, results) {
-//				console.log(results)
-//			}, null);
-//		});
+		//		log(sql)
+		//		var db = SogreyWebsql.createTableWithDBData()
+		//		db.transaction(function(tx) {
+		//			//			UPDATE 表名称 SET 列名称 = 新值 WHERE 列名称 = 某值
+		//
+		//			//UPDATE planList SET id='15', pid='12345678', guid='123431', title='hahah' ,completePer='40' WHERE id='15'
+		//			//			tx.executeSql("UPDATE planList SET id='15', pid='007', guid='ooo', title='yoyoyo' ,completePer='40' WHERE id='15'",[], function(tx1, results) {
+		//			//				console.log(results)
+		//			//			}, null);
+		//			//			UPDATE planList SET pid='001',guid='148',title='青海扎道路项目计划-31',startTimePlan='2017.01.01',endTimePlan='2017.01.21',startTime='2017.01.03',endTime='2017.01.31',completePer='20' WHERE id='31'
+		//			tx.executeSql(sql, [], function(tx1, results) {
+		//				console.log(results)
+		//			}, null);
+		//		});
 		SogreyWebsql.executeSql(sql, [])
 	}
 	//查询数据
@@ -205,25 +210,25 @@
 		if(whereValue != "" && typeof(whereValue) != "undefined")
 			whereValueArray = whereValue.split("|")
 
-//		var db = SogreyWebsql.createTableWithDBData()
-//		db.transaction(function(tx) {
-//			tx.executeSql('SELECT * FROM ' + tableName + whereArg, whereValueArray, function(tx1, results) {
-//				//				log(results)
-//				//				
-//				//				var html =(typeof(results.rows)=="SQLResultSetRowList")+"<br/>"+ "查询到" + results.rows.length + "条数据<br/>"
-//				//				for(i = 0; i < results.rows.length; i++) {
-//				//					html += "<p><b>" + results.rows.item(i).id + " - " + results.rows.item(i).name + " - " + results.rows.item(i).desc + "</b></p><br/>";
-//				//				}
-//				//				html +=JSON.stringify(results.rows)+"<br/>"
-//				//				html +=results.rows.item(1).name+"<br/>"
-//				//				html +=JSON.parse(JSON.stringify(results.rows)); 
-//				//				$("#result").html(html)
-//				if(typeof(callback) == "function") {
-//					callback(results.rows);
-//				}
-//			}, null);
-//		});
-		SogreyWebsql.executeSqlCallback('SELECT * FROM ' + tableName + whereArg, whereValueArray,callback)
+		//		var db = SogreyWebsql.createTableWithDBData()
+		//		db.transaction(function(tx) {
+		//			tx.executeSql('SELECT * FROM ' + tableName + whereArg, whereValueArray, function(tx1, results) {
+		//				//				log(results)
+		//				//				
+		//				//				var html =(typeof(results.rows)=="SQLResultSetRowList")+"<br/>"+ "查询到" + results.rows.length + "条数据<br/>"
+		//				//				for(i = 0; i < results.rows.length; i++) {
+		//				//					html += "<p><b>" + results.rows.item(i).id + " - " + results.rows.item(i).name + " - " + results.rows.item(i).desc + "</b></p><br/>";
+		//				//				}
+		//				//				html +=JSON.stringify(results.rows)+"<br/>"
+		//				//				html +=results.rows.item(1).name+"<br/>"
+		//				//				html +=JSON.parse(JSON.stringify(results.rows)); 
+		//				//				$("#result").html(html)
+		//				if(typeof(callback) == "function") {
+		//					callback(results.rows);
+		//				}
+		//			}, null);
+		//		});
+		SogreyWebsql.executeSqlCallback('SELECT * FROM ' + tableName + whereArg, whereValueArray, callback)
 	}
 	//查询是否已存在
 	SogreyWebsql.isExists = function(tableName, whereArg, whereValue, callback) {
@@ -248,10 +253,10 @@
 		return null
 	}
 	//执行sql
-	SogreyWebsql.executeSql=function(sql,whereArg){
-		SogreyWebsql.executeSqlCallback(sql,whereArg,null)
+	SogreyWebsql.executeSql = function(sql, whereArg) {
+		SogreyWebsql.executeSqlCallback(sql, whereArg, null)
 	}
-	SogreyWebsql.executeSqlCallback=function(sql,whereArg,callback){
+	SogreyWebsql.executeSqlCallback = function(sql, whereArg, callback) {
 		var db = SogreyWebsql.createTableWithDBData()
 		db.transaction(function(tx) {
 			//			UPDATE 表名称 SET 列名称 = 新值 WHERE 列名称 = 某值
@@ -262,8 +267,8 @@
 			//			}, null);
 			//			UPDATE planList SET pid='001',guid='148',title='青海扎道路项目计划-31',startTimePlan='2017.01.01',endTimePlan='2017.01.21',startTime='2017.01.03',endTime='2017.01.31',completePer='20' WHERE id='31'
 			tx.executeSql(sql, whereArg, function(tx1, results) {
-				if(typeof(callback)=="function")
-				callback(results.rows)
+				if(typeof(callback) == "function")
+					callback(results.rows)
 			}, null);
 		});
 	}
@@ -358,13 +363,24 @@
 			},
 			{
 				funName: "SogreyWebsql.insertObj(tableName, obj)",
-				desc: "向表tableName中插入数据",
+				desc: "向表tableName中插入单数据",
 				params: [{
 					paramName: "tableName",
 					desc: "表名"
 				}, {
 					paramName: "obj",
 					desc: "要插入的数据对象，会自动读取该对象的所有字段属性及对应属性值成列，进行插入数据"
+				}]
+			},
+			{
+				funName: "SogreyWebsql.insertArray(tableName, array)",
+				desc: "向表tableName中插入一组数据，数组",
+				params: [{
+					paramName: "tableName",
+					desc: "表名"
+				}, {
+					paramName: "array",
+					desc: "要插入的数据对象数组，会自动读取该对象的所有字段属性及对应属性值成列，进行插入数据"
 				}]
 			},
 			{
@@ -468,7 +484,7 @@
 				params: [{
 					paramName: "sql",
 					desc: "sql语句"
-				},{
+				}, {
 					paramName: "whereArg",
 					desc: "替换sql语句中?的值，是个数组"
 				}]
@@ -479,19 +495,19 @@
 				params: [{
 					paramName: "sql",
 					desc: "sql语句"
-				},{
+				}, {
 					paramName: "whereArg",
 					desc: "替换sql语句中?的值，是个数组"
-				},{
+				}, {
 					paramName: "callback",
 					desc: "执行回调，其参数是查询结果，rows 是数组，lenght长度"
 				}]
-			}			
+			}
 		]
 	}
 	//数据库表结构
 	var DBData = {
-		DBName: "demo1",
+		DBName: "GLWebGLBIMEngine",
 		DBVersion: 1,
 		desc: "Bim 5D webapp 数据库",
 		db: [{
@@ -509,19 +525,23 @@
 		}, {
 			tableName: "planList30", //月计划表名
 			keyPath: "id",
-			cols: "pid|guid|title|startTimePlan|endTimePlan|startTime|endTime|completePer" //字段列名
+			cols: "pId|guid|title|startTimePlan|endTimePlan|startTime|endTime|completePer|componentID" //字段列名
 		}, {
 			tableName: "planList10", //旬计划表名
 			keyPath: "id",
-			cols: "pid|guid|title|startTimePlan|endTimePlan|startTime|endTime|completePer" //字段列名
+			cols: "pId|guid|title|startTimePlan|endTimePlan|startTime|endTime|completePer|componentID" //字段列名
 		}, {
 			tableName: "planList7", //周计划表名
 			keyPath: "id",
-			cols: "pid|guid|title|startTimePlan|endTimePlan|startTime|endTime|completePer" //字段列名
+			cols: "pId|guid|title|startTimePlan|endTimePlan|startTime|endTime|completePer|componentID" //字段列名
 		}, {
 			tableName: "planList1", //日计划表名
 			keyPath: "id",
-			cols: "pid|guid|title|startTimePlan|endTimePlan|startTime|endTime|completePer" //字段列名
+			cols: "pId|guid|title|startTimePlan|endTimePlan|startTime|endTime|completePer|componentID" //字段列名
+		}, {
+			tableName: "planSubmitHistory", //日志提交历史记录
+			keyPath: "localId",//本地ID，同步后有网络ID；同步下来的数据 本地ID与网络ID一致
+			cols: "id|pId|title|startTime|endTime|startTimeAsPlanned|endTimeAsPlanned|rate|stopWorkingCase|delayCase|images|videos|files|remark|componentIds|status" //字段列名   status-同步状态 0-未同步 1-已同步
 		}]
 	}
 	window.sogreyWebsql = window.SogreyWebsql = SogreyWebsql;
